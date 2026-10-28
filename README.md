@@ -101,12 +101,3 @@ npm test
 ```
 
 Tes integrasi menjalankan ketiga komponen dengan database sementara dan menguji pembatasan role/kepemilikan, device, akses langsung ke service, finalisasi dan sinkronisasi, token service, refresh, serta logout.
-
-## Saran urutan video demo (6–9 menit)
-
-1. Tunjukkan diagram aliran: client → Gateway/PEP → service, termasuk panggilan Service Nilai kembali melalui gateway ke Service Transkrip.
-2. Tunjukkan `src/gateway.js`, `src/policy.js`, dan `src/services.js`: validasi JWT/device, keputusan policy, secret gateway, serta verifikasi JWT kedua di service.
-3. Login mahasiswa, lihat nilai sendiri, lalu coba NIM mahasiswa lain dan device yang tidak terdaftar.
-4. Login dosen, tunjukkan nilai di kelas yang diampu, ubah nilai, finalisasi, lalu buka transkrip yang sudah disinkronkan.
-5. Tunjukkan penolakan edit nilai final, akses langsung ke port service tanpa secret/token, dan sinkronisasi dengan token user.
-6. Uji admin, refresh/logout, lalu jelaskan audit log dan jam akses.

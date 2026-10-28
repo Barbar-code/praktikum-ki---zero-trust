@@ -1,0 +1,16 @@
+{
+  "name": "zero-trust-grade-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Praktikum Zero Trust: gateway PEP, policy engine, layanan nilai dan transkrip.",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

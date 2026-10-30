@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>Zero Trust Lab - Sistem Nilai</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main id="login-screen" class="login-screen">
+      <section class="login-intro">
+        <a class="brand brand-light" href="/" aria-label="Zero Trust Lab">
+          <span class="brand-mark">Z</span>
+          <span>zero<span class="brand-accent">trust</span><small>SECURITY LAB</small></span>
+        </a>
+        <div class="intro-copy">
+          <span class="eyebrow"><span class="pulse-dot"></span> PRAKTIKUM KEAMANAN INFORMASI</span>
+          <h1>Belajar Zero Trust.<br><span>Langsung dari alurnya.</span></h1>
+          <p>Jelajahi gateway, policy, layanan nilai, dan jejak audit dalam satu dashboard interaktif.</p>
+        </div>
+        <div class="intro-footer"><span>LOCAL LEARNING ENVIRONMENT</span><span>v1.0</span></div>
+      </section>
+      <section class="login-panel">
+        <form id="login-form" class="login-card">
+          <div class="mobile-brand brand">
+            <span class="brand-mark">Z</span>
+            <span>zero<span class="brand-accent">trust</span><small>SECURITY LAB</small></span>
+          </div>
+          <span class="eyebrow">SELAMAT DATANG</span>
+          <h2>Masuk ke lab</h2>
+          <p class="muted">Gunakan akun demo yang sudah terdaftar di sistem.</p>
+          <label for="login-user">Akun demo</label>
+          <select id="login-user" class="input">
+            <option value="admin">Admin — admin</option>
+            <option value="dosen1">Dosen — dosen1</option>
+            <option value="dosen2">Dosen — dosen2</option>
+            <option value="mhs1">Mahasiswa — mhs1</option>
+            <option value="mhs2">Mahasiswa — mhs2</option>
+            <option value="mhs3">Mahasiswa — mhs3</option>
+          </select>
+          <label for="login-password">Password</label>
+          <input id="login-password" class="input" type="password" autocomplete="current-password" required>
+          <label for="login-device">Device ID</label>
+          <input id="login-device" class="input" type="text" autocomplete="off" required>
+          <button class="button button-primary button-wide" type="submit">
+            <span>Masuk ke dashboard</span><span aria-hidden="true">→</span>
+          </button>
+          <p id="login-error" class="form-error" role="alert"></p>
+          <div class="login-note"><span class="lock-icon">⌑</span> Autentikasi dan device tetap divalidasi oleh gateway.</div>
+        </form>
+      </section>
+    </main>
+
+    <div id="app-shell" class="app-shell hidden">
+      <aside class="sidebar">
+        <a class="brand sidebar-brand" href="#" data-page="dashboard">
+          <span class="brand-mark">Z</span>
+          <span>zero<span class="brand-accent">trust</span><small>SECURITY LAB</small></span>
+        </a>
+        <div class="side-label">WORKSPACE</div>
+        <nav class="nav-menu" aria-label="Menu utama">
+          <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span> Ringkasan</button>
+          <button class="nav-item" data-page="grades"><span class="nav-icon">▤</span> Data nilai</button>
+          <button class="nav-item" data-page="transcript"><span class="nav-icon">▧</span> Transkrip</button>
+          <button class="nav-item" data-page="playground"><span class="nav-icon">⌘</span> API playground</button>
+          <button class="nav-item admin-only hidden" data-page="audit"><span class="nav-icon">◷</span> Audit log</button>
+          <button class="nav-item" data-page="guide"><span class="nav-icon">ⓘ</span> Panduan lab</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="gateway-card">
+            <span class="gateway-icon"><span class="pulse-dot"></span></span>
+            <div><strong>Gateway aktif</strong><small>127.0.0.1:3000</small></div>
+          </div>
+          <div class="sidebar-caption">ZERO TRUST • LOCAL DEMO</div>
+        </div>
+      </aside>
+
+      <div class="main-column">
+        <header class="topbar">
+          <div>
+            <div class="breadcrumb">ZERO TRUST LAB <span>/</span> <strong id="breadcrumb-current">RINGKASAN</strong></div>
+            <div class="topbar-subtitle">Sistem Nilai Akademik</div>
+          </div>
+          <div class="topbar-right">
+            <span class="environment-pill"><span class="pulse-dot"></span> LOCAL ENVIRONMENT</span>
+            <button id="logout-button" class="topbar-logout" aria-label="Keluar dari aplikasi"><span aria-hidden="true">↪</span><span>Keluar</span></button>
+            <button id="profile-button" class="profile-button" aria-label="Informasi akun">
+              <span id="profile-avatar" class="avatar">A</span>
+              <span class="profile-copy"><strong id="profile-name">Admin</strong><small id="profile-role">Administrator</small></span>
+              <span class="chevron">⌄</span>
+            </button>
+          </div>
+        </header>
+
+        <main id="page-content" class="page-content"></main>
+        <footer class="app-footer"><span>ZERO TRUST GRADE SYSTEM</span><span>Gateway · Policy Engine · Services</span></footer>
+      </div>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

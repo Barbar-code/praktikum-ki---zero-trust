@@ -8,7 +8,7 @@ const accounts = {
 };
 
 const pageTitles = {
-  dashboard: 'RINGKASAN',
+  dashboard: 'DASHBOARD',
   grades: 'DATA NILAI',
   transcript: 'TRANSKRIP',
   playground: 'API PLAYGROUND',
@@ -137,7 +137,7 @@ function renderPage(page) {
 async function renderDashboard() {
   const user = state.user;
   pageContent.innerHTML = `
-    ${heading('OVERVIEW', 'Ringkasan praktikum', 'Satu ruang untuk memahami akses, policy, dan alur data Zero Trust.')}
+    ${heading('OVERVIEW', 'Dashboard', 'Satu ruang untuk memahami akses, policy, dan alur data Zero Trust.')}
     <section class="welcome-card">
       <div class="welcome-copy"><span class="eyebrow">ZERO TRUST GRADE SYSTEM</span><h2>Halo, ${escapeHtml(user.username)} 👋</h2><p>Setiap request diperiksa berdasarkan identitas, device, role, dan policy.</p></div>
       <div class="welcome-badge"><span class="pulse-dot"></span> Sesi terautentikasi · ${escapeHtml(user.role)}</div>
@@ -356,14 +356,13 @@ async function renderAudit() {
 
 function renderGuide() {
   pageContent.innerHTML = `
-    ${heading('LEARNING CENTER', 'Panduan praktikum', 'Kenali komponen sistem, jalankan skenario, dan amati keputusan policy.')}
+    ${heading('LEARNING CENTER', 'Panduan lab', 'Kenali komponen sistem dan konsep Zero Trust yang diterapkan.') }
     <section class="guide-grid">
       <article class="card guide-card"><span class="guide-number">01</span><h3>Gateway sebagai PEP</h3><p>Gateway adalah satu-satunya jalur masuk dari browser. Setiap request user membutuhkan access token dan device ID yang terdaftar. Policy Engine memutuskan akses sebelum request diteruskan ke service.</p></article>
       <article class="card guide-card"><span class="guide-number">02</span><h3>Policy berbasis konteks</h3><p>Akses ditentukan dari role, device, kepemilikan data, status nilai, dan jam akses. Dosen hanya mengubah nilai kelas yang diampu, sedangkan mahasiswa hanya melihat data miliknya.</p></article>
       <article class="card guide-card"><span class="guide-number">03</span><h3>Service & token</h3><p>Service Nilai dan Transkrip berjalan terpisah. Keduanya memeriksa gateway secret dan JWT. Finalisasi meminta token service dari gateway untuk sinkronisasi transkrip; token user tidak dapat menggantikannya.</p></article>
       <article class="card guide-card"><span class="guide-number">04</span><h3>Audit log</h3><p>Gateway mencatat waktu, subjek, endpoint, device, keputusan, dan alasan. Login sebagai admin lalu buka menu Audit log untuk melihat event tersebut.</p></article>
-      <article class="card guide-card"><span class="guide-number">05</span><h3>Urutan demo</h3><ul><li>Masuk sebagai mahasiswa, lihat nilai sendiri.</li><li>Uji akses NIM lain di Transkrip atau API playground.</li><li>Masuk sebagai dosen untuk ubah dan finalisasi nilai.</li><li>Masuk sebagai admin untuk melihat audit log.</li></ul></article>
-      <article class="card guide-card"><span class="guide-number">06</span><h3>Endpoint utama</h3><div class="endpoint-list"><div class="endpoint-row"><span class="method">POST</span><span>/auth/login</span></div><div class="endpoint-row"><span class="method">GET</span><span>/nilai</span></div><div class="endpoint-row"><span class="method">PUT</span><span>/nilai/:id</span></div><div class="endpoint-row"><span class="method">POST</span><span>/kelas/:id/finalisasi</span></div><div class="endpoint-row"><span class="method">GET</span><span>/transkrip/:nim</span></div><div class="endpoint-row"><span class="method">GET</span><span>/audit (admin)</span></div></div></article>
+      <article class="card guide-card"><span class="guide-number">05</span><h3>Endpoint utama</h3><div class="endpoint-list"><div class="endpoint-row"><span class="method">POST</span><span>/auth/login</span></div><div class="endpoint-row"><span class="method">GET</span><span>/nilai</span></div><div class="endpoint-row"><span class="method">PUT</span><span>/nilai/:id</span></div><div class="endpoint-row"><span class="method">POST</span><span>/kelas/:id/finalisasi</span></div><div class="endpoint-row"><span class="method">GET</span><span>/transkrip/:nim</span></div><div class="endpoint-row"><span class="method">GET</span><span>/audit (admin)</span></div></div></article>
     </section>
     <div class="notice"><strong>Menjalankan aplikasi:</strong> di PowerShell jalankan <code>npm install</code>, lalu <code>npm start</code>. Buka <code>http://127.0.0.1:3000</code> di browser. Tes integrasi backend dapat dijalankan terpisah dengan <code>npm test</code>.</div>`;
 }

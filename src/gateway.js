@@ -1,4 +1,5 @@
 const crypto = require('node:crypto');
+const path = require('node:path');
 const express = require('express');
 const config = require('./config');
 const { logDecision, verifyPassword } = require('./db');
@@ -212,6 +213,21 @@ function createGatewayApp(db) {
 
   app.get('/nilai', userAuth, policyAuth, (req, res) =>
     forward(req, res, `http://127.0.0.1:${config.nilaiPort}`, '/nilai', req.policyDecision.allowedGradeIds));
+  app.get('/audit', userAuth, (req, res) => {
+    const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.claims.sub);
+    if (!user || user.role !== req.claims.role || user.role !== 'admin') {
+      return denied(req, res, {
+        subject: req.claims.sub,
+        reason: 'Audit log hanya dapat diakses oleh admin.'
+      });
+    }
+    audit(req, req.claims.sub, 'allow', 'Admin melihat audit log.');
+    const rows = db.prepare(`
+      SELECT id, timestamp, subject, endpoint, device_id AS deviceId, decision, reason
+      FROM audit_logs ORDER BY id DESC LIMIT 100
+    `).all();
+    return res.json({ data: rows });
+  });
   app.put('/nilai/:id', userAuth, policyAuth, (req, res) =>
     forward(req, res, `http://127.0.0.1:${config.nilaiPort}`, `/nilai/${encodeURIComponent(req.params.id)}`));
   app.post('/kelas/:id/finalisasi', userAuth, policyAuth, (req, res) =>
@@ -221,6 +237,7 @@ function createGatewayApp(db) {
   app.post('/transkrip/sinkron', serviceTokenAuth, (req, res) =>
     forward(req, res, `http://127.0.0.1:${config.transkripPort}`, '/sinkron'));
 
+  app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use((req, res) => denied(req, res, {
     status: 404,
     reason: 'Endpoint atau metode tidak ditemukan.'

@@ -116,6 +116,9 @@ test('Zero Trust end-to-end access controls and service synchronization', async 
   child.stderr.on('data', chunk => { output += chunk.toString(); });
   const gateway = `http://127.0.0.1:${gatewayPort}`;
   await waitForGateway(gateway);
+  const dashboard = await fetch(gateway);
+  assert.equal(dashboard.status, 200);
+  assert.match(await dashboard.text(), /Zero Trust Lab/);
 
   const student = await login('mhs1', 'Mhs123!', 'device-mhs1-001');
   assert.equal(student.status, 200);
@@ -133,6 +136,14 @@ test('Zero Trust end-to-end access controls and service synchronization', async 
     token: studentToken,
     device: 'device-mhs1-001'
   })).status, 403);
+  assert.equal((await request(gateway, '/audit', {
+    token: studentToken,
+    device: 'device-mhs1-001'
+  })).status, 403);
+  assert.equal((await request(gateway, '/auth/service', {
+    method: 'POST',
+    body: { clientId: 'browser-demo', clientSecret: 'invalid-demo-secret' }
+  })).status, 401);
 
   const invalidDevice = await login('mhs1', 'Mhs123!', 'device-tidak-terdaftar');
   assert.equal(invalidDevice.status, 401);
@@ -195,6 +206,12 @@ test('Zero Trust end-to-end access controls and service synchronization', async 
     token: admin.data.accessToken,
     device: 'device-admin-001'
   })).status, 200);
+  const adminAudit = await request(gateway, '/audit', {
+    token: admin.data.accessToken,
+    device: 'device-admin-001'
+  });
+  assert.equal(adminAudit.status, 200);
+  assert.ok(adminAudit.data.data.length > 0);
 
   const refreshed = await request(gateway, '/auth/refresh', {
     method: 'POST',

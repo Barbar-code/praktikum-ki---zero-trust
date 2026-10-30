@@ -15,7 +15,9 @@ npm install
 npm start
 ```
 
-Server hanya listen di `127.0.0.1`. Aplikasi ini menyediakan API, bukan halaman web; gunakan PowerShell atau Postman untuk mengirim request ke gateway di `http://127.0.0.1:3000`. Biarkan terminal server tetap berjalan dan buka terminal kedua untuk contoh request di bawah. Hentikan server dengan `Ctrl+C`.
+Server hanya listen di `127.0.0.1`. Setelah server berjalan, buka `http://127.0.0.1:3000` di browser untuk memakai dashboard web lokal. Aplikasi juga menyediakan API Gateway di alamat yang sama; Anda dapat memakai API playground di dalam dashboard atau PowerShell/Postman untuk mengirim request. Biarkan terminal server tetap berjalan. Hentikan dengan `Ctrl+C`.
+
+Dashboard memiliki menu Ringkasan, Data nilai, Transkrip, API playground, Audit log (khusus admin), dan Panduan lab. API playground menyediakan skenario untuk mencoba endpoint, melihat status/payload respons, serta menguji penolakan akses. Audit log menampilkan hingga 100 aktivitas terbaru, termasuk subjek, endpoint, device, keputusan, dan alasan.
 
 Database dibuat otomatis di `data\zero-trust.sqlite`; data awal ditambahkan saat pertama dijalankan. Untuk mengulang data awal, hentikan server, hapus hanya file database tersebut, lalu jalankan lagi:
 
@@ -81,6 +83,7 @@ Finalisasi membuat Service Nilai meminta token service ke gateway, lalu memanggi
 | `POST /kelas/:id/finalisasi` | Hanya dosen pengampu dan dalam jam akses; memicu sinkronisasi transkrip |
 | `GET /transkrip/:nim` | Mahasiswa hanya melihat NIM sendiri; admin dapat melihat semua NIM |
 | `POST /transkrip/sinkron` | Hanya token service dari Service Nilai; token user ditolak |
+| `GET /audit` | Hanya admin; menampilkan hingga 100 audit log terbaru |
 
 Access token default berlaku 10 menit, refresh token 1 hari, dan token service 5 menit. Setiap service memeriksa `X-Gateway-Secret` **dan** tanda tangan, tipe, serta masa berlaku JWT. Jadi secret saja tidak cukup untuk mengakses service secara langsung. Gateway menulis waktu, subjek, endpoint, device, hasil, dan alasan keputusan ke tabel `audit_logs`.
 
@@ -104,4 +107,4 @@ Policy Engine memeriksa role user dari database dan menghitung ID nilai yang bol
 npm test
 ```
 
-Tes integrasi menjalankan ketiga komponen dengan database sementara dan menguji pembatasan role/kepemilikan, device, akses langsung ke service, finalisasi dan sinkronisasi, token service, refresh, serta logout.
+Tes integrasi menjalankan ketiga komponen dengan database sementara dan menguji pembatasan role/kepemilikan, device, akses langsung ke service, finalisasi dan sinkronisasi, token service, refresh, logout, serta akses audit log. Pengujian otomatis tetap dapat dijalankan terpisah dari dashboard.

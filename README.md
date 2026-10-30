@@ -15,7 +15,9 @@ npm install
 npm start
 ```
 
-Server hanya listen di `127.0.0.1`. Buka terminal kedua untuk mengirim request ke gateway. Database dibuat otomatis di `data\zero-trust.sqlite`; data awal ditambahkan saat pertama dijalankan. Untuk mengulang data awal, hentikan server, hapus hanya file database tersebut, lalu jalankan lagi:
+Server hanya listen di `127.0.0.1`. Aplikasi ini menyediakan API, bukan halaman web; gunakan PowerShell atau Postman untuk mengirim request ke gateway di `http://127.0.0.1:3000`. Biarkan terminal server tetap berjalan dan buka terminal kedua untuk contoh request di bawah. Hentikan server dengan `Ctrl+C`.
+
+Database dibuat otomatis di `data\zero-trust.sqlite`; data awal ditambahkan saat pertama dijalankan. Untuk mengulang data awal, hentikan server, hapus hanya file database tersebut, lalu jalankan lagi:
 
 ```powershell
 Remove-Item .\data\zero-trust.sqlite
@@ -92,7 +94,9 @@ $env:ACCESS_END_HOUR="24"
 npm start
 ```
 
-Nama environment lain: `JWT_SECRET`, `GATEWAY_SECRET`, `SERVICE_CLIENT_ID`, `SERVICE_CLIENT_SECRET`, `ACCESS_TOKEN_SECONDS`, `SERVICE_TOKEN_SECONDS`, `REFRESH_TOKEN_SECONDS`, `GATEWAY_PORT`, `NILAI_PORT`, `TRANSKRIP_PORT`, `GATEWAY_URL`, dan `DB_PATH`. Nilai secret bawaan hanya untuk demo lokal; ganti dengan secret acak sebelum lingkungan lain digunakan.
+Nama environment lain: `JWT_SECRET`, `GATEWAY_SECRET`, `SERVICE_CLIENT_ID`, `SERVICE_CLIENT_SECRET`, `ACCESS_TOKEN_SECONDS`, `SERVICE_TOKEN_SECONDS`, `REFRESH_TOKEN_SECONDS`, `GATEWAY_PORT`, `NILAI_PORT`, `TRANSKRIP_PORT`, `GATEWAY_URL`, dan `DB_PATH`. Jika tidak disetel, secret JWT, gateway, dan client service dibuat acak saat proses dimulai dan tidak ditampilkan ke log. Ketiga aplikasi berjalan dalam satu proses sehingga berbagi konfigurasi secret yang sama. Untuk proses terpisah atau penggunaan di luar demo lokal, atur ketiga secret secara eksplisit di environment masing-masing proses dan gunakan nilai yang sama untuk komponen yang berkomunikasi.
+
+Policy Engine memeriksa role user dari database dan menghitung ID nilai yang boleh dilihat berdasarkan mahasiswa atau kelas yang diampu dosen. Gateway/PEP membatasi respons Service Nilai ke ID hasil keputusan Policy Engine, selain service juga melakukan penyaringan berdasarkan token. Dengan demikian pembatasan kepemilikan tidak hanya diserahkan kepada service resource.
 
 ## Pengujian
 

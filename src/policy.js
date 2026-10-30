@@ -12,14 +12,34 @@ function isWithinAccessHours(date = new Date()) {
 }
 
 function decidePolicy(db, { user, method, path, body }) {
-  const deviceId = body.deviceId;
+  const storedUser = db.prepare('SELECT role FROM users WHERE id = ?').get(user.sub);
+  if (!storedUser || storedUser.role !== user.role) {
+    return { allow: false, reason: 'Subjek tidak ditemukan atau role token tidak sesuai dengan data user.' };
+  }
+
   if (method === 'GET' && path === '/nilai') {
     if (!['mahasiswa', 'dosen'].includes(user.role)) return { allow: false, reason: 'Role tidak diizinkan melihat nilai.' };
-    if (user.role === 'dosen' &&
-        !db.prepare('SELECT 1 FROM classes WHERE lecturer_id = ? LIMIT 1').get(user.sub)) {
-      return { allow: false, reason: 'Dosen tidak memiliki kelas yang diampu.' };
+    let grades;
+    if (user.role === 'mahasiswa') {
+      grades = db.prepare(`
+        SELECT g.id FROM grades g
+        JOIN users s ON s.id = g.student_id
+        WHERE s.id = ? AND s.role = 'mahasiswa'
+      `).all(user.sub);
+    } else {
+      grades = db.prepare(`
+        SELECT g.id FROM grades g
+        JOIN classes c ON c.id = g.class_id
+        WHERE c.lecturer_id = ?
+      `).all(user.sub);
     }
-    return { allow: true, reason: 'Role dan cakupan data nilai diizinkan.' };
+    return {
+      allow: true,
+      reason: user.role === 'mahasiswa'
+        ? 'Role mahasiswa valid; Policy Engine membatasi nilai ke data milik mahasiswa.'
+        : 'Role dosen valid; Policy Engine membatasi nilai ke kelas yang diampu dosen.',
+      allowedGradeIds: grades.map(grade => grade.id)
+    };
   }
 
   const updateMatch = /^\/nilai\/([^/]+)$/.exec(path);

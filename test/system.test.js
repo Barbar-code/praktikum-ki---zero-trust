@@ -10,10 +10,14 @@ const { after, test } = require('node:test');
 process.env.ACCESS_START_HOUR = '7';
 process.env.ACCESS_END_HOUR = '21';
 const { isWithinAccessHours } = require('../src/policy');
+const { decidePolicy } = require('../src/policy');
 const { DatabaseSync } = require('node:sqlite');
 
 const root = path.join(__dirname, '..');
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zero-trust-test-'));
+const testJwtSecret = 'test-jwt-secret-that-is-at-least-32-chars';
+const testGatewaySecret = 'test-gateway-secret-that-is-at-least-32-chars';
+const testServiceClientSecret = 'test-service-secret-that-is-at-least-32-chars';
 let child;
 let output = '';
 let gatewayPort;
@@ -100,6 +104,9 @@ test('Zero Trust end-to-end access controls and service synchronization', async 
       TRANSKRIP_PORT: String(transkripPort),
       GATEWAY_URL: `http://127.0.0.1:${gatewayPort}`,
       DB_PATH: path.join(tempDir, 'test.sqlite'),
+      JWT_SECRET: testJwtSecret,
+      GATEWAY_SECRET: testGatewaySecret,
+      SERVICE_CLIENT_SECRET: testServiceClientSecret,
       ACCESS_START_HOUR: '0',
       ACCESS_END_HOUR: '24'
     },
@@ -137,7 +144,7 @@ test('Zero Trust end-to-end access controls and service synchronization', async 
   const directNoSecret = await request(`http://127.0.0.1:${nilaiPort}`, '/nilai', { token: studentToken });
   assert.equal(directNoSecret.status, 403);
   const directNoToken = await request(`http://127.0.0.1:${nilaiPort}`, '/nilai', {
-    gatewaySecret: 'dev-gateway-secret-change-this-too-long'
+    gatewaySecret: testGatewaySecret
   });
   assert.equal(directNoToken.status, 401);
 
@@ -212,6 +219,29 @@ test('Zero Trust end-to-end access controls and service synchronization', async 
   })).status, 401);
 
   const auditDb = new DatabaseSync(path.join(tempDir, 'test.sqlite'));
+  const studentScope = decidePolicy(auditDb, {
+    user: { sub: 'mhs-1', role: 'mahasiswa' },
+    method: 'GET',
+    path: '/nilai',
+    body: {}
+  });
+  assert.equal(studentScope.allow, true);
+  assert.deepEqual(studentScope.allowedGradeIds, ['grade-1']);
+  const lecturerScope = decidePolicy(auditDb, {
+    user: { sub: 'dosen-1', role: 'dosen' },
+    method: 'GET',
+    path: '/nilai',
+    body: {}
+  });
+  assert.equal(lecturerScope.allow, true);
+  assert.deepEqual(lecturerScope.allowedGradeIds, ['grade-1', 'grade-2']);
+  const mismatchedRole = decidePolicy(auditDb, {
+    user: { sub: 'mhs-1', role: 'admin' },
+    method: 'GET',
+    path: '/nilai',
+    body: {}
+  });
+  assert.equal(mismatchedRole.allow, false);
   const auditCount = auditDb.prepare('SELECT COUNT(*) AS count FROM audit_logs').get().count;
   const deniedDevices = auditDb.prepare(`
     SELECT COUNT(*) AS count FROM audit_logs

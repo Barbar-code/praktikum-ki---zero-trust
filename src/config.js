@@ -1,4 +1,11 @@
 const path = require('node:path');
+const crypto = require('node:crypto');
+
+function readSecret(name, defaultValue = crypto.randomBytes(32).toString('base64url')) {
+  const value = process.env[name] || defaultValue;
+  if (value.length < 32) throw new Error(`${name} harus memiliki minimal 32 karakter.`);
+  return value;
+}
 
 function readInteger(name, defaultValue, min, max) {
   const raw = process.env[name];
@@ -19,19 +26,14 @@ const config = {
   refreshTokenSeconds: readInteger('REFRESH_TOKEN_SECONDS', 86400, 1, 604800),
   accessStartHour: readInteger('ACCESS_START_HOUR', 7, 0, 23),
   accessEndHour: readInteger('ACCESS_END_HOUR', 21, 1, 24),
-  jwtSecret: process.env.JWT_SECRET || 'dev-jwt-secret-change-this-to-a-long-random-value',
-  gatewaySecret: process.env.GATEWAY_SECRET || 'dev-gateway-secret-change-this-too-long',
+  jwtSecret: readSecret('JWT_SECRET'),
+  gatewaySecret: readSecret('GATEWAY_SECRET'),
   serviceClientId: process.env.SERVICE_CLIENT_ID || 'nilai-service',
-  serviceClientSecret: process.env.SERVICE_CLIENT_SECRET || 'dev-service-client-secret-change-this',
+  serviceClientSecret: readSecret('SERVICE_CLIENT_SECRET'),
   gatewayUrl: (process.env.GATEWAY_URL || 'http://127.0.0.1:3000').replace(/\/+$/, ''),
   databasePath: process.env.DB_PATH || path.join(__dirname, '..', 'data', 'zero-trust.sqlite')
 };
 
-if (config.jwtSecret.length < 32) throw new Error('JWT_SECRET harus memiliki minimal 32 karakter.');
-if (config.gatewaySecret.length < 32) throw new Error('GATEWAY_SECRET harus memiliki minimal 32 karakter.');
-if (config.serviceClientSecret.length < 16) {
-  throw new Error('SERVICE_CLIENT_SECRET harus memiliki minimal 16 karakter.');
-}
 if (config.accessStartHour === config.accessEndHour) {
   throw new Error('ACCESS_START_HOUR dan ACCESS_END_HOUR tidak boleh sama.');
 }

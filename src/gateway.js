@@ -67,6 +67,7 @@ function createGatewayApp(db) {
     if (!decision.allow) {
       return denied(req, res, { subject: req.claims.sub, reason: decision.reason });
     }
+    req.policyDecision = decision;
     audit(req, req.claims.sub, 'allow', decision.reason);
     return next();
   }
@@ -84,7 +85,7 @@ function createGatewayApp(db) {
     return next();
   }
 
-  async function forward(req, res, target, path) {
+  async function forward(req, res, target, path, allowedGradeIds) {
     const headers = {
       authorization: req.get('Authorization'),
       'X-Gateway-Secret': config.gatewaySecret
@@ -100,7 +101,23 @@ function createGatewayApp(db) {
     }
     try {
       const response = await fetch(`${target}${path}`, options);
-      const text = await response.text();
+      let text = await response.text();
+      if (response.ok && allowedGradeIds) {
+        let payload;
+        try {
+          payload = JSON.parse(text);
+        } catch (error) {
+          console.error('Service Nilai mengembalikan JSON tidak valid:', error);
+          return res.status(502).json({ error: 'Respons Service Nilai tidak dapat diverifikasi oleh Policy Enforcement Point.' });
+        }
+        if (!payload || !Array.isArray(payload.data)) {
+          console.error('Respons Service Nilai tidak memiliki daftar data yang diharapkan.');
+          return res.status(502).json({ error: 'Respons Service Nilai tidak dapat diverifikasi oleh Policy Enforcement Point.' });
+        }
+        const allowed = new Set(allowedGradeIds);
+        payload.data = payload.data.filter(grade => allowed.has(grade.id));
+        text = JSON.stringify(payload);
+      }
       res.status(response.status);
       if (response.headers.get('content-type')) res.set('content-type', response.headers.get('content-type'));
       return res.send(text);
@@ -194,7 +211,7 @@ function createGatewayApp(db) {
   });
 
   app.get('/nilai', userAuth, policyAuth, (req, res) =>
-    forward(req, res, `http://127.0.0.1:${config.nilaiPort}`, '/nilai'));
+    forward(req, res, `http://127.0.0.1:${config.nilaiPort}`, '/nilai', req.policyDecision.allowedGradeIds));
   app.put('/nilai/:id', userAuth, policyAuth, (req, res) =>
     forward(req, res, `http://127.0.0.1:${config.nilaiPort}`, `/nilai/${encodeURIComponent(req.params.id)}`));
   app.post('/kelas/:id/finalisasi', userAuth, policyAuth, (req, res) =>
